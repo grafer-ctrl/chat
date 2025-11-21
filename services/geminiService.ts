@@ -1,9 +1,28 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { GroundingChunk } from '../types';
 
+// Helper to safely access API key without crashing if process is undefined
+const getApiKey = (): string => {
+  try {
+    // In standard Vite/CRA builds, process.env.API_KEY is replaced by string literal.
+    // In raw browser environments, accessing 'process' might throw ReferenceError.
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    console.warn("Could not access process.env.API_KEY");
+  }
+  return "";
+};
+
+const apiKey = getApiKey();
+
+if (!apiKey) {
+  console.error("API_KEY is missing. Please ensure it is set in your environment variables.");
+}
+
 // Initialize the client
-// NOTE: process.env.API_KEY is injected by the build system or environment.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 /**
  * Helper to convert Blob to Base64
